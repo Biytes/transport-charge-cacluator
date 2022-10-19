@@ -6,8 +6,6 @@ export default {
     },
     onShow() {
         console.log('App Show')
-
-        this.initLanguage()
     },
     onHide() {
         console.log('App Hide')
@@ -18,13 +16,6 @@ export default {
     },
 
     methods: {
-        ...mapActions('common', ['switchLanguages', 'getLocaleLanguages']),
-
-        initLanguage() {
-            this.getLocaleLanguages()
-            this.switchLanguages(this.locale)
-            this._i18n.locale = this.locale
-        }
     }
 }
 </script>
