@@ -307,12 +307,78 @@ export default {
             return result
         }
     },
-    mounted() {
 
+    async mounted() {
+        const distance = await this.calculateDistance()
+
+        console.log('最终距离是', distance);
     },
     methods: {
         handleCargoWeightChange(val) {
             this.formData.cargoCBM = Math.ceil(val / WEIGHT_PER_CBM)
+        },
+
+        // 计算距离
+        async calculateDistance() {
+            let warehouse = {}
+
+            // 拿到目标地址坐标
+            const targetCoordinates = await this.getCoordinates()
+
+            // 赋值仓库坐标，因为我拿不到所以，我先写一样的
+            warehouse = targetCoordinates
+
+            // 获取地址
+            const distance = await this.getDistance(targetCoordinates, warehouse)
+
+            return distance
+        },
+
+        // 获取坐标
+        async getCoordinates() {
+            const params = {
+                address: '8 Gillingham 4102'
+            }
+
+            try {
+                const res = await this.$api.common.getCoordinates(params)
+                const coordinates = this.$path(res, 'data.features.0.center', []);
+                const [longtitude, latitude] = coordinates;
+
+                console.log('res', res, longtitude, latitude);
+
+                return { longtitude, latitude }
+
+            } catch (error) {
+                console.warn('getCoordinates', error);
+            }
+        },
+
+        // 获取距离
+        async getDistance(address1, address2) {
+            const params = {
+                longtitude1: address1.longtitude,
+                latitude1: address1.latitude,
+                longtitude2: address2.longtitude,
+                latitude2: address2.latitude
+            }
+
+            try {
+                const res = await this.$api.common.getDistance(params)
+
+                const routes = this.$path(res, 'data.routes', [])
+
+                const distances = routes.map(route => route.distance).sort((x, y) => x - y);
+
+                const distance = this.$path(distances, '0', '空')
+
+                console.log('res', res);
+
+                return distance
+
+            } catch (error) {
+                console.warn('getDistance', error);
+            }
         }
     }
 }

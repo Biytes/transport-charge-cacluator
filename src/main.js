@@ -5,11 +5,13 @@ import store from '@/store'
 import uView from 'uview-ui';
 
 require('@/mixins')
+require('@/apis')
 
 Vue.use(uView);
 Vue.use(Vuex);
 
 Vue.config.productionTip = false
+
 
 App.mpType = 'app'
 

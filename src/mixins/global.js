@@ -12,6 +12,7 @@ export default {
                 url: formatParams(url, params)
             })
         }
+
     },
     computed: {
         ...mapState('common', ['locale', 'version'])
