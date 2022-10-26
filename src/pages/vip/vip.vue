@@ -8,6 +8,28 @@
       :model="formData"
     >
       <u-form-item
+        label="wareHouse address"
+        prop="wareHouseIndex"
+        border-bottom
+        @click.stop="handleShowWareHouseAddress"
+      >
+        <u--input
+          v-model="warehouse.name"
+          disabled
+          placeholder="please select warehouse"
+          border="none"
+        />
+      </u-form-item>
+
+      <u-action-sheet
+        :show="showWareHouseSelector"
+        :actions="warehouses"
+        title="Please select warehouse"
+        @close="showWareHouseSelector = false"
+        @select="selectWareHouse"
+      />
+
+      <u-form-item
         label="Reference No"
         prop="referenceNo"
         border-bottom
@@ -53,6 +75,13 @@
           placeholder="please enter consignee"
           border="none"
         />
+
+        <u-button
+          slot="right"
+          type="plain"
+          text="search"
+          @click="calculateDistance"
+        />
       </u-form-item>
 
       <u-form-item
@@ -74,6 +103,18 @@
       >
         <u--input
           v-model="formData.delieveryDistance"
+          type="digit"
+          border="none"
+        />
+      </u-form-item>
+
+      <u-form-item
+        label="途径收费站"
+        border-bottom
+      >
+        <u--input
+          disbaled
+          :value="chargeStops.join(', ')"
           type="digit"
           border="none"
         />
@@ -161,7 +202,8 @@
         border-bottom
       >
         <u--input
-          v-model="formData.toll"
+          :value="formData.toll"
+          disbaled
           placeholder="please enter toll charge"
           type="digit"
           border="none"
@@ -228,11 +270,15 @@
         />
       </u-form-item>
     </u--form>
+
+    <u-toast ref="uToast" />
   </view>
 </template>
 
 <script>
 const WEIGHT_PER_CBM = 250 // 重量每立方
+
+import { throttle } from '@/utils'
 export default {
     components: {
     },
@@ -256,8 +302,35 @@ export default {
                 overdueCharge: '' // 超时费
             },
 
-            ratio: 0.15 // 燃油附加费率比例
+            ratio: 0.15, // 燃油附加费率比例
 
+            warehouses: [
+                {
+                    name: 'warehouse1',
+                    longtitude: 153.150146,
+                    latitude: -27.431228
+                },
+                {
+                    name: 'warehouse2',
+                    longtitude: 153.037142,
+                    latitude: -29.484764
+                }
+                // {
+                //     name: 'warehouse3',
+                //     longtitude: 153.037142,
+                //     latitude: -29.484764
+                // }
+            ],
+
+            warehouse: null, // 仓库地址
+            consigneeAddress: null, // 目标地址
+
+            showWareHouseSelector: false,
+
+            distance: 0,
+
+            // 收费站
+            chargeStops: []
         }
     },
     computed: {
@@ -295,7 +368,6 @@ export default {
             let result = 0
 
             charges.map(key => {
-                console.log('this.formData[key]', key);
                 result += +this.formData[key] || 0
 
                 return key
@@ -308,36 +380,68 @@ export default {
         }
     },
 
-    async mounted() {
-        const distance = await this.calculateDistance()
+    watch: {
+        // 仓库地址
+        'warehouse': {
+            deep: true,
+            handler() {
+                if (this.formData.consigneeAddress) this.calculateDistance()
+            }
+        },
 
-        console.log('最终距离是', distance);
+        // 收费站
+        chargeStops: {
+            deep: true,
+            handler(newVal) {
+                this.formData.toll = newVal.length * 7 * 2
+            }
+        },
+
+        // 距离计算
+        distance(val) {
+
+        }
+    },
+
+    async mounted() {
+        this.warehouse = this.warehouses[0]
     },
     methods: {
+        // 当重量变化的时候
         handleCargoWeightChange(val) {
             this.formData.cargoCBM = Math.ceil(val / WEIGHT_PER_CBM)
         },
 
+        // 选择地址
+        selectWareHouse(warehouse) {
+            this.warehouse = warehouse
+        },
+
+        handleShowWareHouseAddress() {
+            this.showWareHouseSelector = true
+        },
+
         // 计算距离
         async calculateDistance() {
-            let warehouse = {}
+            if (!this.warehouse) return this.showToast({ type: 'default', title: '请选择仓库'})
+            if (!this.formData.consigneeAddress) return this.showToast({ type: 'default', title: '请输入目标地址'})
+
+            const warehouse = this.warehouse
 
             // 拿到目标地址坐标
             const targetCoordinates = await this.getCoordinates()
 
-            // 赋值仓库坐标，因为我拿不到所以，我先写一样的
-            warehouse = targetCoordinates
-
             // 获取地址
             const distance = await this.getDistance(targetCoordinates, warehouse)
 
-            return distance
+            this.formData.delieveryDistance = `${(distance / 1000).toFixed(3)}km`
+            this.distance = (distance / 1000).toFixed(3)
         },
 
         // 获取坐标
         async getCoordinates() {
             const params = {
-                address: '8 Gillingham 4102'
+                address: this.formData.consigneeAddress
             }
 
             try {
@@ -372,6 +476,10 @@ export default {
 
                 const distance = this.$path(distances, '0', '空')
 
+                const chargeStops = this.$path(routes, '0.legs.0.summary', [])
+
+                this.$set(this, 'chargeStops', chargeStops.split(','))
+
                 console.log('res', res);
 
                 return distance
@@ -379,6 +487,17 @@ export default {
             } catch (error) {
                 console.warn('getDistance', error);
             }
+        },
+
+        showToast(params) {
+            this.$refs.uToast.show({
+                ...params,
+                complete() {
+                    params.url && uni.navigateTo({
+                        url: params.url
+                    })
+                }
+            })
         }
     }
 }
