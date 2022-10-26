@@ -212,15 +212,21 @@
 
       <u-form-item
         label="尾板费"
-        prop="tailboardFee"
         border-bottom
       >
-        <u--input
-          v-model="formData.tailboardFee"
-          placeholder="please enter tailboard fee charge"
-          type="digit"
-          border="none"
-        />
+        <u-radio-group
+          v-model="tailboardFeeIndex"
+          icon-placement="right"
+          @change="changeTailboard"
+        >
+          <u-radio
+            v-for="(item, index) in tailboardFeeConfig"
+            :key="index"
+            :custom-style="{marginLeft: '8px'}"
+            :label="item.name"
+            :name="index"
+          />
+        </u-radio-group>
       </u-form-item>
 
       <u-form-item
@@ -277,8 +283,9 @@
 
 <script>
 const WEIGHT_PER_CBM = 250 // 重量每立方
+import { vipistancePriceConfig } from '@/constant/vip'
+import { tailboardFeeConfig } from '@/constant'
 
-import { throttle } from '@/utils'
 export default {
     components: {
     },
@@ -322,6 +329,8 @@ export default {
                 // }
             ],
 
+            vipistancePriceConfig, // vip收费
+
             warehouse: null, // 仓库地址
             consigneeAddress: null, // 目标地址
 
@@ -330,7 +339,12 @@ export default {
             distance: 0,
 
             // 收费站
-            chargeStops: []
+            chargeStops: [],
+
+            // 距离计算的配置
+            distanceConfig: null,
+            tailboardFeeConfig,
+            tailboardFeeIndex: 0
         }
     },
     computed: {
@@ -344,9 +358,18 @@ export default {
 
         // 基础配送费
         quoteFee() {
-            if (!this.formData.cargoCBM) return ''
+            if (this.distanceConfig) {
+                const { initialPrice, pricePerCBM } = this.distanceConfig
 
-            return 75 + (this.formData.cargoCBM - 1) * 15
+                const cargoCBM = this.$path(this.formData, 'cargoCBM', 1)
+                const extraCargoCBM = Math.ceil(cargoCBM - 1) // 额外的立方米
+
+                const extraFee = extraCargoCBM * pricePerCBM
+
+                return initialPrice + extraFee
+            }
+
+            return 0
         },
 
         // 燃油附加费
@@ -398,13 +421,29 @@ export default {
         },
 
         // 距离计算
-        distance(val) {
+        distance: {
+            handler(val) {
+                console.log('val', val);
+                const distance = Math.round(val);
 
+                const config = this.vipistancePriceConfig.find(item => {
+                    const { min, max } = item;
+
+                    const result = distance >= min && distance <= max
+
+                    return result
+                })
+
+                if (config) this.distanceConfig = config
+
+                console.log('config', config);
+            }
         }
     },
 
     async mounted() {
         this.warehouse = this.warehouses[0]
+        this.changeTailboard(0)
     },
     methods: {
         // 当重量变化的时候
@@ -419,6 +458,11 @@ export default {
 
         handleShowWareHouseAddress() {
             this.showWareHouseSelector = true
+        },
+
+        // 切换
+        changeTailboard(index) {
+            this.formData.tailboardFee = this.tailboardFeeConfig[index].value
         },
 
         // 计算距离

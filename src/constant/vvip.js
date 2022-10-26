@@ -26,6 +26,7 @@ export const vvipistancePriceConfig = [
     {
         min: 75,
         max: 1000000,
-        initialPrice: 'wait for deal'
+        initialPrice: 700,
+        pricePerCBM: 50
     }
 ]

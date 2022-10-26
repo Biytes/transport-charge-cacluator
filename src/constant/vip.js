@@ -1,4 +1,4 @@
-export const vvipistancePriceConfig = [
+export const vipistancePriceConfig = [
     {
         min: 0,
         max: 19,
@@ -26,6 +26,7 @@ export const vvipistancePriceConfig = [
     {
         min: 75,
         max: 1000000,
-        initialPrice: 'wait for deal'
+        initialPrice: 750,
+        pricePerCBM: 55
     }
 ]
