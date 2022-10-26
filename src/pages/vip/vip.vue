@@ -462,6 +462,7 @@ export default {
 
         // 切换
         changeTailboard(index) {
+            console.log('index', index);
             this.formData.tailboardFee = this.tailboardFeeConfig[index].value
         },
 
