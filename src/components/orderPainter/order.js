@@ -37,22 +37,6 @@ export default {
                 }
             },
             {
-                notation: '背景图片',
-                type: TYPES.IMG,
-                src: '',
-                value: '',
-                x: 0,
-                y: 0,
-                handler: ({ background = DEFAULT_BACKGROUND }, canvas) => {
-                    return {
-                        width: 300,
-                        height: 300,
-                        value: background,
-                        src: background
-                    };
-                }
-            },
-            {
                 notation: '姓名',
                 type: TYPES.TEXT,
                 size: 13,
