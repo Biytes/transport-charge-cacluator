@@ -316,7 +316,7 @@
 
 <script>
 const WEIGHT_PER_CBM = 250 // 重量每立方
-const PETROL_RATIO = 0.15 // 燃油附加费率比例
+const PETROL_RATIO = 0.2 // 燃油附加费率比例
 import { vipistancePriceConfig } from '@/constant/vip'
 import { tailboardFeeConfig } from '@/constant'
 import { mapState } from 'vuex'
