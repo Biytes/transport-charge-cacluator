@@ -38,16 +38,14 @@ export default {
     },
     onLoad(options) {
         console.log('options', options);
-        this.order = options
-
-        // {
-        //     consignee: 'Weckson1111ssdasdasdasds',
-        //     consigneeAddress: '8 Gillingham 4102',
-        //     consigneePhone: '13750121745',
-        //     postCode: '122222',
-        //     referenceNo: '1653082552',
-        //     tip: '大索伦蒂诺卡洛斯你的卡拉上你的快乐暗示的离开那是离开的那silken卢卡斯你的卢卡斯你的了看谁的离开拿上来看到你阿莱克斯等你卢卡斯你的了看谁的离开啊'
-        // }
+        this.order = {
+            consignee: 'Weckson1111ssdasdasdasds',
+            consigneeAddress: '8 Gillingham 4102',
+            consigneePhone: '13750121745',
+            postCode: '122222',
+            referenceNo: '1653082552',
+            tip: '大索伦蒂诺卡洛斯你的卡拉上你的快乐暗示的离开那是离开的那silken卢卡斯你的卢卡斯你的了看谁的离开拿上来看到你阿莱克斯等你卢卡斯你的了看谁的离开啊'
+        }
 
 
         setTimeout(() => {
