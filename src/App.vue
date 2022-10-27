@@ -6,6 +6,7 @@ export default {
     },
     onShow() {
         console.log('App Show')
+        this.getAccessToken()
     },
     onHide() {
         console.log('App Hide')
@@ -16,6 +17,7 @@ export default {
     },
 
     methods: {
+        ...mapActions('common', ['getAccessToken'])
     }
 }
 </script>

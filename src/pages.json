@@ -20,6 +20,12 @@
 			"style": {
 				"navigationBarTitleText": "个人中心"
 			}
+		},
+		{
+			"path": "pages/order/preview",
+			"style": {
+				"navigationBarTitleText": "订单预览"
+			}
 		}
 	],
 	"tabBar": {

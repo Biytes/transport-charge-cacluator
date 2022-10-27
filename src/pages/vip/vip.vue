@@ -85,6 +85,17 @@
       </u-form-item>
 
       <u-form-item
+        label="PostCode"
+        prop="postCode"
+        border-bottom
+      >
+        <u--input
+          v-model="formData.postCode"
+          border="none"
+        />
+      </u-form-item>
+
+      <u-form-item
         label="收货人电话"
         prop="consigneePhone"
         border-bottom
@@ -164,7 +175,7 @@
       >
         <u--input
           v-model="formData.ausCash"
-          placeholder="please enter consignee"
+          placeholder="please enter 卸货费"
           type="digit"
           border="none"
         />
@@ -177,7 +188,7 @@
       >
         <u--input
           v-model="formData.commission"
-          placeholder="please enter consignee"
+          placeholder="please enter 卸货费 中方代收"
           type="digit"
           border="none"
         />
@@ -267,6 +278,7 @@
 
       <u-form-item
         label="应收单票服务费"
+        prop="overdueCharge"
         border-bottom
       >
         <u--input
@@ -275,7 +287,28 @@
           border="none"
         />
       </u-form-item>
+
+      <u-form-item
+        label="备注"
+        prop="tip"
+        border-bottom
+      >
+        <u--textarea
+          v-model="formData.tip"
+          placeholder="请输入备注"
+          count
+        />
+      </u-form-item>
     </u--form>
+
+    <view class="actions">
+      <u-button
+        slot="right"
+        type="plain"
+        text="generate"
+        @click="generateOrder"
+      />
+    </view>
 
     <u-toast ref="uToast" />
   </view>
@@ -283,9 +316,10 @@
 
 <script>
 const WEIGHT_PER_CBM = 250 // 重量每立方
+const PETROL_RATIO = 0.15 // 燃油附加费率比例
 import { vipistancePriceConfig } from '@/constant/vip'
 import { tailboardFeeConfig } from '@/constant'
-
+import { mapState } from 'vuex'
 export default {
     components: {
     },
@@ -296,6 +330,7 @@ export default {
                 ladingNumber: '', // ladding number
                 consignee: '', // 收货人
                 consigneeAddress: '', // 收货地址
+                postCode: '', // 邮政编码
                 consigneePhone: '',
 
                 delieveryDistance: '', // 相距公里数
@@ -306,10 +341,12 @@ export default {
                 bookingFee: '', // 监管仓预定费
                 toll: '', // 过路费
                 tailboardFee: '', // 尾板费
-                overdueCharge: '' // 超时费
+                overdueCharge: '', // 超时费
+
+                tip: '' // 备注
             },
 
-            ratio: 0.15, // 燃油附加费率比例
+            ratio: PETROL_RATIO, // 燃油附加费率比例
 
             warehouses: [
                 {
@@ -348,6 +385,7 @@ export default {
         }
     },
     computed: {
+        ...mapState('common', ['accessToken']),
         // 货物抛货重货
         cargoDumpingHeavy() {
 
@@ -423,7 +461,6 @@ export default {
         // 距离计算
         distance: {
             handler(val) {
-                console.log('val', val);
                 const distance = Math.round(val);
 
                 const config = this.vipistancePriceConfig.find(item => {
@@ -462,7 +499,6 @@ export default {
 
         // 切换
         changeTailboard(index) {
-            console.log('index', index);
             this.formData.tailboardFee = this.tailboardFeeConfig[index].value
         },
 
@@ -486,7 +522,8 @@ export default {
         // 获取坐标
         async getCoordinates() {
             const params = {
-                address: this.formData.consigneeAddress
+                address: this.formData.consigneeAddress,
+                accessToken: this.accessToken
             }
 
             try {
@@ -509,7 +546,8 @@ export default {
                 longtitude1: address1.longtitude,
                 latitude1: address1.latitude,
                 longtitude2: address2.longtitude,
-                latitude2: address2.latitude
+                latitude2: address2.latitude,
+                accessToken: this.accessToken
             }
 
             try {
@@ -543,6 +581,20 @@ export default {
                     })
                 }
             })
+        },
+
+        // 生成订单
+        generateOrder() {
+            const order = {
+                postCode: this.formData.postCode || '',
+                consignee: this.formData.consignee,
+                consigneeAddress: this.formData.consigneeAddress,
+                consigneePhone: this.formData.consigneePhone,
+                referenceNo: this.formData.referenceNo,
+                tip: this.formData.tip
+            }
+
+            this.$navigateTo('/pages/order/preview', order)
         }
     }
 }
