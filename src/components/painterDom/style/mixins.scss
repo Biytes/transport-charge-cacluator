@@ -1,0 +1,16 @@
+@mixin hide_scrollbar {
+    ::-webkit-scrollbar {
+      display: none; // Chrome Safari
+    }
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE 10+
+}
+
+@mixin popup_common {
+    box-sizing: border-box;
+    width: 100%;
+    border-top-left-radius: 24rpx;
+    border-top-right-radius: 24rpx;
+    background: #fff;
+    box-shadow: 0 -0.1rem 0.4rem rgba($color: #000000, $alpha: 0.1);
+}

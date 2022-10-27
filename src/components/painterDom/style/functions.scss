@@ -1,0 +1,5 @@
+// 用于切换到H5的时候
+// 或者切换到任何环境
+@function rpx($pixel, $ratio: 2, $unit: 1rpx) {
+    @return $pixel * $ratio * $unit
+}
