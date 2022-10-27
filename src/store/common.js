@@ -41,7 +41,10 @@ export default {
 
         // 获取accessToken
         getAccessToken({ commit }) {
-            const accessToken = JSON.parse(getStorageSync(ACCESS_TOKEN_KEY))
+            const token = getStorageSync(ACCESS_TOKEN_KEY)
+
+            if (!token) return
+            const accessToken = JSON.parse()
             commit('setState', ['accessToken', accessToken])
         }
     }
