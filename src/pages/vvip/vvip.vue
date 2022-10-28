@@ -463,7 +463,7 @@ export default {
             handler(val) {
                 const distance = Math.round(val);
 
-                const config = this.vipistancePriceConfig.find(item => {
+                const config = this.vvipistancePriceConfig.find(item => {
                     const { min, max } = item;
 
                     const result = distance >= min && distance <= max
