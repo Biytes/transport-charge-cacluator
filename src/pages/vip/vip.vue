@@ -521,7 +521,10 @@ export default {
 
             if (!this.formData.cargoCBM) return ''
 
-            return +this.formData.cargoCBM * WEIGHT_PER_CBM
+            const cargoCBMWeight = +this.formData.cargoCBM * WEIGHT_PER_CBM
+            const cargoWeigth = +this.formData.cargoWeight
+
+            return Math.max(cargoCBMWeight, cargoWeigth)
         },
 
         // 基础配送费
@@ -616,7 +619,11 @@ export default {
         },
         // 当重量变化的时候
         handleCargoWeightChange(val) {
-            this.formData.cargoCBM = Math.ceil(val / WEIGHT_PER_CBM)
+            let result = val / WEIGHT_PER_CBM
+
+            if (result <= 0) result = Math.ceil(result)
+
+            this.formData.cargoCBM = result
         },
 
         // 打开选择框
@@ -668,7 +675,7 @@ export default {
             const duration = this.$path(routes, '0.duration', '空')
 
             this.deliveryDistanceWhole = `${(distance / 1000).toFixed(3)}`
-            this.deliveryDurationWhole = `${((duration + 3600) / 60).toFixed(2)}`
+            this.deliveryDurationWhole = `${((duration) / 60).toFixed(2)}`
 
         },
 
