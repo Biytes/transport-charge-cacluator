@@ -44,7 +44,7 @@ export default {
             const token = getStorageSync(ACCESS_TOKEN_KEY)
 
             if (!token) return
-            const accessToken = JSON.parse()
+            const accessToken = token
             commit('setState', ['accessToken', accessToken])
         }
     }

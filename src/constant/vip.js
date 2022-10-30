@@ -1,4 +1,4 @@
-export const vipistancePriceConfig = [
+export const vipDistancePriceConfig = [
     {
         min: 0,
         max: 19,

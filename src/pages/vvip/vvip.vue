@@ -9,9 +9,8 @@
     >
       <u-form-item
         label="wareHouse address"
-        prop="wareHouseIndex"
         border-bottom
-        @click.stop="handleShowWareHouseAddress"
+        @click.stop="handleShowActionSheet('warehouses')"
       >
         <u--input
           v-model="warehouse.name"
@@ -21,13 +20,19 @@
         />
       </u-form-item>
 
-      <u-action-sheet
-        :show="showWareHouseSelector"
-        :actions="warehouses"
-        title="Please select warehouse"
-        @close="showWareHouseSelector = false"
-        @select="selectWareHouse"
-      />
+      <u-form-item
+        label="starting point address"
+        border-bottom
+        @click.stop="handleShowActionSheet('startingPoint')"
+      >
+        <u--input
+          v-model="startingPoint.name"
+          disabled
+          placeholder="please select startingPoint"
+          border="none"
+        />
+      </u-form-item>
+
 
       <u-form-item
         label="Reference No"
@@ -80,7 +85,7 @@
           slot="right"
           type="plain"
           text="search"
-          @click="calculateDistance"
+          @click="calculate"
         />
       </u-form-item>
 
@@ -109,14 +114,34 @@
 
       <u-form-item
         label="相距公里数"
-        prop="delieveryDistance"
+        prop="deliveryDistance"
         border-bottom
       >
         <u--input
-          v-model="formData.delieveryDistance"
+          v-model="formData.deliveryDistance"
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          KM
+        </view>
+      </u-form-item>
+
+      <u-form-item
+        label="配送时间"
+        prop="deliveryDuration"
+        border-bottom
+      >
+        <u--input
+          v-model="formData.deliveryDuration"
+          type="digit"
+          border="none"
+        />
+
+        <view slot="right">
+          分
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -142,6 +167,10 @@
           border="none"
           @change="handleCargoWeightChange"
         />
+
+        <view slot="right">
+          KG
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -155,6 +184,10 @@
           border="none"
           @
         />
+
+        <view slot="right">
+          CBM{{ cargoCBMhint }}
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -179,6 +212,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -192,19 +229,33 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
         label="监管仓预定费"
-        prop="bookingFee"
         border-bottom
       >
-        <u--input
-          v-model="formData.bookingFee"
-          placeholder="please enter booking fee"
-          type="digit"
-          border="none"
-        />
+        <u-radio-group
+          v-model="bookingFeeIndex"
+          icon-placement="right"
+          @change="changeBookingFee"
+        >
+          <u-radio
+            v-for="(item, index) in bookingFeeConfig"
+            :key="index"
+            :custom-style="{marginLeft: '8px'}"
+            :label="item.name"
+            :name="index"
+          />
+        </u-radio-group>
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -219,6 +270,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -238,6 +293,10 @@
             :name="index"
           />
         </u-radio-group>
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -249,6 +308,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD (Excluding GST)
+        </view>
       </u-form-item>
 
 
@@ -261,6 +324,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -274,6 +341,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -286,6 +357,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          AUD
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -299,6 +374,36 @@
           count
         />
       </u-form-item>
+
+      <u-form-item
+        label="总耗时"
+        border-bottom
+      >
+        <u--input
+          v-model="deliveryDurationWhole"
+          :disabled="true"
+          border="none"
+        />
+
+        <view slot="right">
+          分
+        </view>
+      </u-form-item>
+
+      <u-form-item
+        label="总路程"
+        border-bottom
+      >
+        <u--input
+          v-model="deliveryDistanceWhole"
+          :disabled="true"
+          border="none"
+        />
+
+        <view slot="right">
+          KM
+        </view>
+      </u-form-item>
     </u--form>
 
     <view class="actions">
@@ -310,6 +415,24 @@
       />
     </view>
 
+    <!-- 起点选择器 -->
+    <u-action-sheet
+      :show="showStartingPointSelector"
+      :actions="startingPoints"
+      title="Please select starting point"
+      @close="handleHideActionSheet('startingPoint')"
+      @select="selectWareHouse"
+    />
+
+    <!-- 仓库选择器 -->
+    <u-action-sheet
+      :show="showWareHouseSelector"
+      :actions="warehouses"
+      title="Please select starting point"
+      @close="handleHideActionSheet('warehouses')"
+      @select="selectWareHouse"
+    />
+
     <u-toast ref="uToast" />
   </view>
 </template>
@@ -317,8 +440,8 @@
 <script>
 const WEIGHT_PER_CBM = 250 // 重量每立方
 const PETROL_RATIO = 0.15 // 燃油附加费率比例
-import { vvipistancePriceConfig } from '@/constant/vvip'
-import { tailboardFeeConfig } from '@/constant'
+import { vvipDistancePriceConfig } from '@/constant/vip'
+import { tailboardFeeConfig, bookingFeeConfig, warehouses, startingPoints } from '@/constant'
 import { mapState } from 'vuex'
 export default {
     components: {
@@ -333,7 +456,9 @@ export default {
                 postCode: '', // 邮政编码
                 consigneePhone: '',
 
-                delieveryDistance: '', // 相距公里数
+                deliveryDistance: '', // 相距公里数
+                deliveryDuration: '', // 相距时间
+
                 cargoWeight: '', // 货物重量
                 cargoCBM: '', // 货物体积
                 ausCash: '', // 卸货现金
@@ -342,46 +467,51 @@ export default {
                 toll: '', // 过路费
                 tailboardFee: '', // 尾板费
                 overdueCharge: '', // 超时费
-
                 tip: '' // 备注
             },
 
-            ratio: PETROL_RATIO, // 燃油附加费率比例
+            petrolRatio: PETROL_RATIO, // 燃油附加费率比例
+            cargoCBMhint: '',
 
-            warehouses: [
-                {
-                    name: 'warehouse1',
-                    longtitude: 153.150146,
-                    latitude: -27.431228
-                },
-                {
-                    name: 'warehouse2',
-                    longtitude: 153.037142,
-                    latitude: -29.484764
-                }
-                // {
-                //     name: 'warehouse3',
-                //     longtitude: 153.037142,
-                //     latitude: -29.484764
-                // }
-            ],
+            warehouses, // 仓库地址
+            startingPoints, // 起点选择
 
-            vvipistancePriceConfig, // vip收费
 
-            warehouse: null, // 仓库地址
+            vvipDistancePriceConfig, // vip收费
+
+            warehouse: warehouses[0], // 仓库地址
+            startingPoint: startingPoints[0], // 起始地址
+            targetCoordinates: null, // 目标坐标
             consigneeAddress: null, // 目标地址
-
-            showWareHouseSelector: false,
-
-            distance: 0,
 
             // 收费站
             chargeStops: [],
 
             // 距离计算的配置
             distanceConfig: null,
+
+            // 尾板费
             tailboardFeeConfig,
-            tailboardFeeIndex: 0
+            tailboardFeeIndex: 0,
+
+            // 预订费
+            bookingFeeConfig,
+            bookingFeeIndex: 0,
+
+            // charge
+            charge: '', // 最终的价格
+
+            showWareHouseSelector: false, // 仓库地址选择
+            showStartingPointSelector: false, // 仓库地址选择
+            actionSheetKeyMaps: {
+                'warehouses': 'showWareHouseSelector',
+                'startingPoint': 'showStartingPointSelector'
+            },
+
+            // 行驶总距离
+            deliveryDistanceWhole: '',
+            // 使用的总时间
+            deliveryDurationWhole: ''
         }
     },
     computed: {
@@ -396,6 +526,10 @@ export default {
 
         // 基础配送费
         quoteFee() {
+
+            if (this.formData.deliveryDistance > 74.9) return ''
+            if (this.formData.cargoCBM > 19) return ''
+
             if (this.distanceConfig) {
                 const { initialPrice, pricePerCBM } = this.distanceConfig
 
@@ -413,31 +547,6 @@ export default {
         // 燃油附加费
         feulSurcharge() {
             return this.quoteFee * this.ratio
-        },
-
-        // 收费
-        charge() {
-            const charges = [
-                'ausCash',
-                'commission',
-                'bookingFee',
-                'toll',
-                'tailboardFee',
-                'overdueCharge'
-            ]
-
-            let result = 0
-
-            charges.map(key => {
-                result += +this.formData[key] || 0
-
-                return key
-            })
-
-            result += this.quoteFee || 0
-            result += this.feulSurcharge || 0
-
-            return result
         }
     },
 
@@ -446,7 +555,7 @@ export default {
         'warehouse': {
             deep: true,
             handler() {
-                if (this.formData.consigneeAddress) this.calculateDistance()
+                if (this.formData.consigneeAddress) this.calculate()
             }
         },
 
@@ -459,11 +568,11 @@ export default {
         },
 
         // 距离计算
-        distance: {
+        'formData.deliveryDistance': {
             handler(val) {
                 const distance = Math.round(val);
 
-                const config = this.vvipistancePriceConfig.find(item => {
+                const config = this.vvipDistancePriceConfig.find(item => {
                     const { min, max } = item;
 
                     const result = distance >= min && distance <= max
@@ -475,17 +584,57 @@ export default {
 
                 console.log('config', config);
             }
+        },
+
+        // 抛重体积
+        'formData.cargoCBM': {
+            handler(value) {
+                const { cargoWeight = '' } = this.formData
+
+                const weightCBM = Math.ceil(cargoWeight / WEIGHT_PER_CBM)
+
+                this.cargoCBMhint = value > weightCBM ? '抛货重量' : '实际重量'
+            }
+        },
+
+        formData: {
+            deep: true,
+            handler() {
+                this.calculateCharge()
+            }
         }
+
     },
 
     async mounted() {
-        this.warehouse = this.warehouses[0]
-        this.changeTailboard(0)
+        this.initData()
     },
     methods: {
+        initData() {
+            this.changeTailboard(0)
+            this.changeBookingFee(0)
+        },
         // 当重量变化的时候
         handleCargoWeightChange(val) {
             this.formData.cargoCBM = Math.ceil(val / WEIGHT_PER_CBM)
+        },
+
+        // 打开选择框
+        handleShowActionSheet(key) {
+            const actionKey = this.actionSheetKeyMaps[key]
+
+            if (!actionKey) return console.warn('未知类型');
+
+            this[actionKey] = true
+        },
+
+        // 隐藏选择框
+        handleHideActionSheet(key) {
+            const actionKey = this.actionSheetKeyMaps[key]
+
+            if (!actionKey) return console.warn('未知类型');
+
+            this[actionKey] = false
         },
 
         // 选择地址
@@ -493,13 +642,34 @@ export default {
             this.warehouse = warehouse
         },
 
-        handleShowWareHouseAddress() {
-            this.showWareHouseSelector = true
-        },
-
         // 切换
         changeTailboard(index) {
             this.formData.tailboardFee = this.tailboardFeeConfig[index].value
+        },
+
+        // 切换
+        changeBookingFee(index) {
+            this.formData.bookingFee = this.bookingFeeConfig[index].value
+        },
+
+        async calculate() {
+            await this.calculateDistance() // 计算一段距离
+            this.calculateWholeTrip() // 计算整段
+        },
+
+        async calculateWholeTrip() {
+            const res = await this.getDistance(this.startingPoint, this.warehouse, this.targetCoordinates, this.startingPoint)
+
+            console.log('res', res);
+
+            const routes = this.$path(res, 'data.routes', [])
+
+            const distance = this.$path(routes, '0.distance', '空')
+            const duration = this.$path(routes, '0.duration', '空')
+
+            this.deliveryDistanceWhole = `${(distance / 1000).toFixed(3)}`
+            this.deliveryDurationWhole = `${((duration + 3600) / 60).toFixed(2)}`
+
         },
 
         // 计算距离
@@ -510,19 +680,30 @@ export default {
             const warehouse = this.warehouse
 
             // 拿到目标地址坐标
-            const targetCoordinates = await this.getCoordinates()
+            const targetCoordinates = await this.getCoordinates(this.formData.consigneeAddress)
+
+            this.targetCoordinates = targetCoordinates
 
             // 获取地址
-            const distance = await this.getDistance(targetCoordinates, warehouse)
+            const res = await this.getDistance(warehouse, targetCoordinates)
 
-            this.formData.delieveryDistance = `${(distance / 1000).toFixed(3)}km`
-            this.distance = (distance / 1000).toFixed(3)
+            const routes = this.$path(res, 'data.routes', [])
+
+            const distance = this.$path(routes, '0.distance', '空')
+            const duration = this.$path(routes, '0.duration', '空')
+
+            const chargeStops = this.$path(routes, '0.legs.0.summary', [])
+
+            this.$set(this, 'chargeStops', chargeStops.split(','))
+
+            this.formData.deliveryDistance = `${(distance / 1000).toFixed(3)}`
+            this.formData.deliveryDuration = `${(duration / 60)}`
         },
 
         // 获取坐标
-        async getCoordinates() {
+        async getCoordinates(address) {
             const params = {
-                address: this.formData.consigneeAddress,
+                address,
                 accessToken: this.accessToken
             }
 
@@ -530,8 +711,6 @@ export default {
                 const res = await this.$api.common.getCoordinates(params)
                 const coordinates = this.$path(res, 'data.features.0.center', []);
                 const [longtitude, latitude] = coordinates;
-
-                console.log('res', res, longtitude, latitude);
 
                 return { longtitude, latitude }
 
@@ -541,31 +720,23 @@ export default {
         },
 
         // 获取距离
-        async getDistance(address1, address2) {
+        async getDistance(address1, address2, address3 = {}, address4 = {}) {
             const params = {
                 longtitude1: address1.longtitude,
                 latitude1: address1.latitude,
                 longtitude2: address2.longtitude,
                 latitude2: address2.latitude,
+                longtitude3: address3.longtitude,
+                latitude3: address3.latitude,
+                longtitude4: address4.longtitude,
+                latitude4: address4.latitude,
                 accessToken: this.accessToken
             }
 
             try {
                 const res = await this.$api.common.getDistance(params)
 
-                const routes = this.$path(res, 'data.routes', [])
-
-                const distances = routes.map(route => route.distance).sort((x, y) => x - y);
-
-                const distance = this.$path(distances, '0', '空')
-
-                const chargeStops = this.$path(routes, '0.legs.0.summary', [])
-
-                this.$set(this, 'chargeStops', chargeStops.split(','))
-
-                console.log('res', res);
-
-                return distance
+                return res
 
             } catch (error) {
                 console.warn('getDistance', error);
@@ -595,6 +766,34 @@ export default {
             }
 
             this.$navigateTo('/pages/order/preview', order)
+        },
+
+        // 计算价格
+        calculateCharge() {
+            if (this.formData.deliveryDistance > 74.9) return this.charge = ''
+            if (this.formData.cargoCBM > 19) return this.charge = ''
+
+            const charges = [
+                'ausCash',
+                'commission',
+                'bookingFee',
+                'toll',
+                'tailboardFee',
+                'overdueCharge'
+            ]
+
+            let result = 0
+
+            charges.map(key => {
+                result += +this.formData[key] || 0
+
+                return key
+            })
+
+            result += this.quoteFee || 0
+            result += this.feulSurcharge || 0
+
+            this.charge = result
         }
     }
 }
