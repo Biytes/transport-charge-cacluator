@@ -148,6 +148,47 @@ export default {
                         y: canvas.RPX(245)
                     };
                 }
+            },
+            {
+                notation: 'productDescription',
+                type: TYPES.TEXT,
+                size: 13,
+                lineHeight: 1.2,
+                maxWidth: 560,
+                fontWeight: 'bold',
+                color: '#333333',
+                textOverflow: 'wrap',
+                panelHorizontalCenter: true,
+                maxLine: 5,
+                handler: ({ productDescription }, canvas) => {
+                    return {
+                        value: productDescription,
+                        x: canvas.RPX(60),
+                        y: canvas.RPX(440)
+                    };
+                }
+            },
+            {
+                notation: 'productQuantity',
+                type: TYPES.TEXT,
+                size: 13,
+                lineHeight: 1,
+                maxWidth: 150,
+                width: 150,
+                fontWeight: 'bold',
+                color: '#333333',
+                textOverflow: 'ellipsis',
+                textAlign: 'center',
+
+                panelHorizontalCenter: true,
+                maxLine: 5,
+                handler: ({ productQuantity }, canvas) => {
+                    return {
+                        value: productQuantity,
+                        x: canvas.RPX(680),
+                        y: canvas.RPX(448)
+                    };
+                }
             }
         ]
     }

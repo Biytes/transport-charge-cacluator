@@ -186,7 +186,7 @@
         />
 
         <view slot="right">
-          CBM{{ cargoCBMhint }}
+          CBM「{{ cargoCBMhint }}」
         </view>
       </u-form-item>
 
@@ -199,6 +199,10 @@
           type="digit"
           border="none"
         />
+
+        <view slot="right">
+          KG
+        </view>
       </u-form-item>
 
       <u-form-item
@@ -305,6 +309,7 @@
       >
         <u--input
           v-model="quoteFee"
+          :disabled="true"
           type="digit"
           border="none"
         />
@@ -314,6 +319,21 @@
         </view>
       </u-form-item>
 
+      <!-- 当基础配送费为空时，输入 -->
+      <u-form-item
+        label="额外配送费"
+        border-bottom
+      >
+        <u--input
+          v-model="formData.extraQuoteFee"
+          type="digit"
+          border="none"
+        />
+
+        <view slot="right">
+          AUD (Excluding GST)
+        </view>
+      </u-form-item>
 
       <u-form-item
         label="燃油配送费"
@@ -372,6 +392,29 @@
           v-model="formData.tip"
           placeholder="请输入备注"
           count
+        />
+      </u-form-item>
+
+      <u-form-item
+        label="产品名称"
+        prop="overdueCharge"
+        border-bottom
+      >
+        <u--input
+          v-model="formData.productDescription"
+          border="none"
+        />
+      </u-form-item>
+
+      <u-form-item
+        label="产品数量"
+        prop="overdueCharge"
+        border-bottom
+      >
+        <u--input
+          v-model="formData.productQuantity"
+          type="digit"
+          border="none"
         />
       </u-form-item>
 
@@ -467,7 +510,10 @@ export default {
                 toll: '', // 过路费
                 tailboardFee: '', // 尾板费
                 overdueCharge: '', // 超时费
-                tip: '' // 备注
+                extraQuoteFee: '', // 额外配送费
+                tip: '', // 备注
+                productDescription: '', // 产品描述
+                productQuantity: '' // 产品数量
             },
 
             petrolRatio: PETROL_RATIO, // 燃油附加费率比例
@@ -516,6 +562,15 @@ export default {
     },
     computed: {
         ...mapState('common', ['accessToken']),
+
+        // 基础配送费不合理
+        isQuoteFeealid() {
+            const distanceOutOfRange = this.formData.deliveryDistance > 74.9;
+            const CBMOutOfLimit = this.formData.cargoCBM > 19
+
+            return distanceOutOfRange || CBMOutOfLimit
+        },
+
         // 货物抛货重货
         cargoDumpingHeavy() {
 
@@ -528,28 +583,33 @@ export default {
         },
 
         // 基础配送费
-        quoteFee() {
+        quoteFee: {
+            set(newVal) {
+                console.log('setQuoteFee', newVal);
+            },
 
-            if (this.formData.deliveryDistance > 74.9) return ''
-            if (this.formData.cargoCBM > 19) return ''
+            get() {
+                if (this.isQuoteFeeInvalid) return ''
 
-            if (this.distanceConfig) {
-                const { initialPrice, pricePerCBM } = this.distanceConfig
+                if (this.distanceConfig) {
+                    const { initialPrice, pricePerCBM } = this.distanceConfig
 
-                const cargoCBM = this.$path(this.formData, 'cargoCBM', 1)
-                const extraCargoCBM = Math.ceil(cargoCBM - 1) // 额外的立方米
+                    // 实际要计算的CBM
+                    const cargoCBM = this.cargoDumpingHeavy / WEIGHT_PER_CBM
+                    const extraCargoCBM = Math.ceil(cargoCBM - 1) // 额外的立方米
 
-                const extraFee = extraCargoCBM * pricePerCBM
+                    const extraFee = extraCargoCBM * pricePerCBM
 
-                return initialPrice + extraFee
+                    return initialPrice + extraFee
+                }
+
+                return 0
             }
-
-            return 0
         },
 
         // 燃油附加费
         feulSurcharge() {
-            return this.quoteFee * this.ratio
+            return ((this.quoteFee + +this.formData.extraQuoteFee) * this.petrolRatio).toFixed(2)
         }
     },
 
@@ -594,7 +654,7 @@ export default {
             handler(value) {
                 const { cargoWeight = '' } = this.formData
 
-                const weightCBM = Math.ceil(cargoWeight / WEIGHT_PER_CBM)
+                const weightCBM = cargoWeight / WEIGHT_PER_CBM
 
                 this.cargoCBMhint = value > weightCBM ? '抛货重量' : '实际重量'
             }
@@ -621,7 +681,7 @@ export default {
         handleCargoWeightChange(val) {
             let result = val / WEIGHT_PER_CBM
 
-            if (result <= 0) result = Math.ceil(result)
+            if (result <= 1) result = Math.ceil(result)
 
             this.formData.cargoCBM = result
         },
@@ -769,7 +829,9 @@ export default {
                 consigneeAddress: this.formData.consigneeAddress,
                 consigneePhone: this.formData.consigneePhone,
                 referenceNo: this.formData.referenceNo,
-                tip: this.formData.tip
+                tip: this.formData.tip,
+                productDescription: this.formData.productDescription,
+                productQuantity: this.formData.productQuantity
             }
 
             this.$navigateTo('/pages/order/preview', order)
@@ -777,16 +839,14 @@ export default {
 
         // 计算价格
         calculateCharge() {
-            if (this.formData.deliveryDistance > 74.9) return this.charge = ''
-            if (this.formData.cargoCBM > 19) return this.charge = ''
-
             const charges = [
                 'ausCash',
                 'commission',
                 'bookingFee',
                 'toll',
                 'tailboardFee',
-                'overdueCharge'
+                'overdueCharge',
+                'extraQuoteFee'
             ]
 
             let result = 0
@@ -797,8 +857,8 @@ export default {
                 return key
             })
 
-            result += this.quoteFee || 0
-            result += this.feulSurcharge || 0
+            result += +this.quoteFee || 0
+            result += +this.feulSurcharge || 0
 
             this.charge = result
         }
