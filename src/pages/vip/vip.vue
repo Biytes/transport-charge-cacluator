@@ -186,7 +186,7 @@
         />
 
         <view slot="right">
-          CBM「{{ cargoCBMhint }}」
+          CBM{{ cargoCBMhint ? `「${cargoCBMhint}」` : '' }}
         </view>
       </u-form-item>
 
@@ -764,7 +764,7 @@ export default {
             this.$set(this, 'chargeStops', chargeStops.split(','))
 
             this.formData.deliveryDistance = `${(distance / 1000).toFixed(3)}`
-            this.formData.deliveryDuration = `${(duration / 60)}`
+            this.formData.deliveryDuration = `${(duration / 60).toFixed(2)}`
         },
 
         // 获取坐标
