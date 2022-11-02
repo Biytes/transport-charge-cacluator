@@ -4,15 +4,15 @@
 	},
 	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
 		{
-			"path": "pages/vip/vip",
-			"style": {
-				"navigationBarTitleText": "vip"
-			}
-		},
-		{
 			"path": "pages/vvip/vvip",
 			"style": {
 				"navigationBarTitleText": "vvip"
+			}
+		},
+		{
+			"path": "pages/vip/vip",
+			"style": {
+				"navigationBarTitleText": "vip"
 			}
 		},
 		{
@@ -37,16 +37,16 @@
 		"display": "block",
         "list": [
 			{
-                "pagePath": "pages/vip/vip",
-                "iconPath": "static/images/tab/vip.png",
-                "selectedIconPath": "static/images/tab/vip-active.png",
-                "text": "vip"
-            },
-            {
                 "pagePath": "pages/vvip/vvip",
                 "iconPath": "static/images/tab/vvip.png",
                 "selectedIconPath": "static/images/tab/vvip-active.png",
                 "text": "vvip"
+            },
+			{
+                "pagePath": "pages/vip/vip",
+                "iconPath": "static/images/tab/vip.png",
+                "selectedIconPath": "static/images/tab/vip-active.png",
+                "text": "vip"
             },
             {
                 "pagePath": "pages/my/my",

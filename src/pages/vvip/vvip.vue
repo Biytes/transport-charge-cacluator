@@ -595,7 +595,7 @@ export default {
                     const { initialPrice, pricePerCBM } = this.distanceConfig
 
                     // 实际要计算的CBM
-                    const cargoCBM = this.cargoDumpingHeavy / WEIGHT_PER_CBM
+                    const cargoCBM = Number(this.cargoDumpingHeavy / WEIGHT_PER_CBM).toFixed(2)
                     const extraCargoCBM = Math.ceil(cargoCBM - 1) // 额外的立方米
 
                     const extraFee = extraCargoCBM * pricePerCBM
