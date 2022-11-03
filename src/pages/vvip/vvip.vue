@@ -654,7 +654,7 @@ export default {
             handler(value) {
                 const { cargoWeight = '' } = this.formData
 
-                const weightCBM = cargoWeight / WEIGHT_PER_CBM
+                const weightCBM = Number(cargoWeight / WEIGHT_PER_CBM).toFixed(2)
 
                 this.cargoCBMhint = value > weightCBM ? '抛货重量' : '实际重量'
             }
